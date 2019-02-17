@@ -1,5 +1,16 @@
+.autosuggest--input-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
 .autosuggest--input {
   height: 20px;
   width: 300px;
   padding: 5px 15px;
+}
+
+.autosuggest--empty {
+  display: block;
+  padding: 10px;
+  box-shadow: 0 0 5px 0 #e9e9e9;
 }
