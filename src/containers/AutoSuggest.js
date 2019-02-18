@@ -32,6 +32,57 @@ class AutoSuggest extends Component {
     window.removeEventListener('click', this.handleClickOutside)
   }
 
+  getAutosuggestForm = () => {
+    const {
+      activeSuggestion,
+      value,
+      highlightedSuggestions,
+      showSuggestions
+    } = this.state
+
+    return (
+      <form className='autosuggest--form' onSubmit={this.handleSubmit}>
+        <div className='autosuggest--list-container'>
+          <input
+            aria-autocomplete='list'
+            autoComplete={'off'}
+            className='autosuggest--input'
+            onChange={this.handleOnChange}
+            onKeyDown={this.handleKeyDown}
+            placeholder='type some fruit!'
+            type='text'
+            value={value}
+          />
+          {showSuggestions &&
+            (highlightedSuggestions.length > 0 ? (
+              <AutoSuggestList
+                activeSuggestion={activeSuggestion}
+                handleMouseMove={this.handleMouseMove}
+                handleOnClick={this.handleOnClick}
+                highlightedSuggestions={highlightedSuggestions}
+                myRef={this.autoSuggestItemRef}
+              />
+            ) : (
+              <div className='autosuggest--empty'>
+                <span>No Suggestions found :(</span>
+              </div>
+            ))}
+        </div>
+        <input className='autosuggest--button' type='submit' value='Submit' />
+      </form>
+    )
+  }
+
+  handleClickOutside = e => {
+    // close suggestion list if user clicks away
+    if (
+      this.state.showSuggestions &&
+      !this.autosuggestRef.current.contains(e.target)
+    ) {
+      this.setState({ showSuggestions: false })
+    }
+  }
+
   handleKeyDown = e => {
     const { activeSuggestion, showSuggestions } = this.state
     let newActiveSuggestion
@@ -44,7 +95,10 @@ class AutoSuggest extends Component {
       case 'Tab':
       case 'Enter':
         // enter pressed
-        if (activeSuggestion === null) {
+        if (
+          activeSuggestion === null ||
+          this.filteredSuggestions.length === 0
+        ) {
           this.setState({
             showSuggestions: false,
             activeSuggestion: 0
@@ -89,19 +143,21 @@ class AutoSuggest extends Component {
     }
   }
 
-  setActiveSuggestion = newActiveSuggestion => {
-    this.setState(
-      {
-        activeSuggestion: newActiveSuggestion
-      },
-      () => {
-        if (this.autoSuggestItemRef.current) {
-          this.autoSuggestItemRef.current.scrollIntoView({
-            block: 'nearest'
-          })
-        }
-      }
+  handleMouseMove = e => {
+    let activeIndex = this.filteredSuggestions.indexOf(
+      e.currentTarget.innerText
     )
+    this.setState({ activeSuggestion: activeIndex })
+  }
+
+  handleOnClick = e => {
+    // get value and fill input, then reset the suggestion list
+    this.filteredSuggestions = []
+    this.setState({
+      activeSuggestion: 0,
+      showSuggestions: false,
+      value: e.currentTarget.innerText
+    })
   }
 
   handleOnChange = e => {
@@ -137,31 +193,9 @@ class AutoSuggest extends Component {
     })
   }
 
-  handleOnClick = e => {
-    // get value and fill input, then reset the suggestion list
-    this.filteredSuggestions = []
-    this.setState({
-      activeSuggestion: 0,
-      showSuggestions: false,
-      value: e.currentTarget.innerText
-    })
-  }
-
-  handleClickOutside = e => {
-    // close suggestion list if user clicks away
-    if (
-      this.state.showSuggestions &&
-      !this.autosuggestRef.current.contains(e.target)
-    ) {
-      this.setState({ showSuggestions: false })
-    }
-  }
-
-  handleMouseMove = e => {
-    let activeIndex = this.filteredSuggestions.indexOf(
-      e.currentTarget.innerText
-    )
-    this.setState({ activeSuggestion: activeIndex })
+  handleSubmit = e => {
+    // Submit to wherever you want to here
+    e.preventDefault()
   }
 
   highlightResults = (value, filteredSuggestions) => {
@@ -181,51 +215,32 @@ class AutoSuggest extends Component {
     return highlightedSuggestions
   }
 
-  handleSubmit = e => {
-    // Submit to wherever you want to here
-    e.preventDefault()
+  setActiveSuggestion = newActiveSuggestion => {
+    this.setState(
+      {
+        activeSuggestion: newActiveSuggestion
+      },
+      () => {
+        if (this.autoSuggestItemRef.current) {
+          this.autoSuggestItemRef.current.scrollIntoView({
+            block: 'nearest'
+          })
+        }
+      }
+    )
   }
 
   render() {
-    const {
-      activeSuggestion,
-      value,
-      highlightedSuggestions,
-      showSuggestions
-    } = this.state
-
     return (
       <div className='autosuggest' ref={this.autosuggestRef}>
         <h1 className='autosuggest--header'>AutoSuggest App</h1>
-        <form className='autosuggest--form' onSubmit={this.handleSubmit}>
-          <div className='autosuggest--list-container'>
-            <input
-              aria-autocomplete='list'
-              autoComplete={'off'}
-              className='autosuggest--input'
-              onChange={this.handleOnChange}
-              onKeyDown={this.handleKeyDown}
-              placeholder='Fruit'
-              type='text'
-              value={value}
-            />
-            {showSuggestions &&
-              (highlightedSuggestions.length > 0 ? (
-                <AutoSuggestList
-                  activeSuggestion={activeSuggestion}
-                  handleMouseMove={this.handleMouseMove}
-                  handleOnClick={this.handleOnClick}
-                  highlightedSuggestions={highlightedSuggestions}
-                  myRef={this.autoSuggestItemRef}
-                />
-              ) : (
-                <div className='autosuggest--empty'>
-                  <span>No Suggestions found :(</span>
-                </div>
-              ))}
-          </div>
-          <input className='autosuggest--button' type='submit' value='Submit' />
-        </form>
+        {this.props.suggestions && this.props.suggestions.length > 0 ? (
+          this.getAutosuggestForm()
+        ) : (
+          <h3 className='autosuggest--error'>
+            Error: cannot find suggestions :(
+          </h3>
+        )}
       </div>
     )
   }

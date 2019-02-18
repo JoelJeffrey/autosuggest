@@ -45,6 +45,11 @@
   width: 100%;
 }
 
+.autosuggest--error {
+  color: rgb(223, 48, 48);
+  text-align: center;
+}
+
 .autosuggest--highlight {
   color: rgb(223, 48, 48);
   background: transparent;
