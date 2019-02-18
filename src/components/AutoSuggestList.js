@@ -1,24 +1,32 @@
-import React from 'react'
-import AutoSuggestItem from './AutoSuggesItem'
+import React, { Component } from 'react'
+import AutoSuggestItem from './AutoSuggestItem'
 
 import './AutoSuggestList.scss'
 
-const AutoSuggestList = props => {
-  const { filteredSuggestions, handleOnClick } = props
+class AutoSuggestList extends Component {
+  render() {
+    const { activeSuggestion, filteredSuggestions, handleOnClick } = this.props
+    return (
+      <ul className='autosuggest-list' role='listbox'>
+        {filteredSuggestions.map((suggestion, i) => {
+          let isActive = false
 
-  return (
-    <ul className='autosuggest-list'>
-      {filteredSuggestions.map((suggestion, i) => {
-        return (
-          <AutoSuggestItem
-            handleOnClick={handleOnClick}
-            suggestion={suggestion}
-            key={`${suggestion}-${i}`}
-          />
-        )
-      })}
-    </ul>
-  )
+          if (i === activeSuggestion) {
+            isActive = true
+          }
+          return (
+            <AutoSuggestItem
+              isActive={isActive}
+              handleOnClick={handleOnClick}
+              suggestion={suggestion}
+              key={`${suggestion}-${i}`}
+              tabIndex={i}
+            />
+          )
+        })}
+      </ul>
+    )
+  }
 }
 
 export default AutoSuggestList

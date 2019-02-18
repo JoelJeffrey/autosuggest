@@ -11,11 +11,68 @@ class AutoSuggest extends Component {
 
   constructor(props) {
     super(props)
+    this.autosuggestRef = React.createRef()
 
     this.state = {
       filteredSuggestions: [],
       showSuggestions: false,
+      activeSuggestion: 0,
       value: ''
+    }
+  }
+
+  componentDidMount() {
+    window.addEventListener('click', this.handleClickOutside)
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('click', this.handleClickOutside)
+  }
+
+  handleKeyDown = e => {
+    const {
+      activeSuggestion,
+      filteredSuggestions,
+      showSuggestions
+    } = this.state
+
+    if (!showSuggestions) {
+      return
+    }
+
+    switch (e.key) {
+      case 'Enter':
+        // enter pressed
+        this.setState({
+          showSuggestions: false,
+          value: filteredSuggestions[activeSuggestion],
+          activeSuggestion: 0
+        })
+        break
+      case 'ArrowUp':
+        // up arrow pressed
+        if (activeSuggestion === 0) {
+          this.setState(state => ({
+            activeSuggestion: filteredSuggestions.length - 1
+          }))
+        } else {
+          this.setState(state => ({
+            activeSuggestion: activeSuggestion - 1
+          }))
+        }
+        break
+      case 'ArrowDown':
+        // down arrow pressed
+        if (activeSuggestion === filteredSuggestions.length - 1) {
+          this.setState({ activeSuggestion: 0 })
+        } else {
+          this.setState(state => ({
+            activeSuggestion: activeSuggestion + 1
+          }))
+        }
+
+        break
+      default:
     }
   }
 
@@ -23,44 +80,70 @@ class AutoSuggest extends Component {
     const { suggestions } = this.props
     const value = e.currentTarget.value
 
+    if (value.length === 0) {
+      this.setState({ showSuggestions: false, value: value })
+      return
+    }
+
     const filteredSuggestions = suggestions.filter(
-      suggestion => suggestion.toLowerCase().indexOf(value.toLowerCase()) > -1
+      suggestion =>
+        suggestion.toLowerCase().indexOf(value.trim().toLowerCase()) > -1
     )
 
     this.setState({
       filteredSuggestions,
       showSuggestions: true,
-      value: value
+      value
     })
   }
 
   handleOnClick = e => {
-    console.log(e.currentTarget.innerText)
     this.setState({
-      value: e.currentTarget.innerText,
-      showSuggestions: false
+      activeSuggestion: 0,
+      filteredSuggestions: [],
+      showSuggestions: false,
+      value: e.currentTarget.innerText
     })
   }
 
+  handleClickOutside = e => {
+    if (
+      this.state.showSuggestions &&
+      !this.autosuggestRef.current.contains(e.target)
+    ) {
+      this.setState({ showSuggestions: false })
+    }
+  }
+
+  // highlightResults = () => {
+  //   return <mark>item</mark>
+  // }
+
   render() {
-    const { value, filteredSuggestions, showSuggestions } = this.state
+    const {
+      activeSuggestion,
+      value,
+      filteredSuggestions,
+      showSuggestions
+    } = this.state
 
     return (
-      <div className='autosuggest'>
-        <h1>AutoSuggest</h1>
-        <div className='autosuggest--input-wrapper'>
+      <div className='autosuggest' ref={this.autosuggestRef}>
+        <h1>AutoSuggest App</h1>
+        <form className='autosuggest--form'>
           <input
             autoComplete={'off'}
             className='autosuggest--input'
             onChange={this.handleOnChange}
-            placeholder='start typing yo!'
+            onKeyDown={this.handleKeyDown}
+            placeholder='Fruit'
             type='text'
             value={value}
           />
           {showSuggestions &&
-            value.length > 0 &&
             (filteredSuggestions.length > 0 ? (
               <AutoSuggestList
+                activeSuggestion={activeSuggestion}
                 handleOnClick={this.handleOnClick}
                 filteredSuggestions={filteredSuggestions}
               />
@@ -69,7 +152,7 @@ class AutoSuggest extends Component {
                 <span>No Suggestions found :(</span>
               </div>
             ))}
-        </div>
+        </form>
       </div>
     )
   }

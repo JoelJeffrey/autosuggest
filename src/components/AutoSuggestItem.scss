@@ -1,7 +1,11 @@
-.autosuggest-item {
-  padding: 10px;
+$activeItem: darken(#fff, 10%);
 
-  &:hover {
-    background: darken(#fff, 10%);
+.autosuggest-item {
+  padding: 15px 25px;
+  text-align: left;
+
+  &:hover,
+  &.autosuggest-item--active {
+    background: $activeItem;
   }
 }
