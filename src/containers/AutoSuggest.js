@@ -13,7 +13,7 @@ class AutoSuggest extends Component {
   constructor(props) {
     super(props)
     this.autoSuggestItemRef = React.createRef()
-    this.autosuggestRef = React.createRef()
+    this.autosuggestContainerRef = React.createRef()
     this.filteredSuggestions = []
 
     this.state = {
@@ -42,12 +42,17 @@ class AutoSuggest extends Component {
 
     return (
       <form className='autosuggest--form' onSubmit={this.handleSubmit}>
-        <div className='autosuggest--list-container'>
+        <div
+          className='autosuggest--list-container'
+          ref={this.autosuggestContainerRef}
+        >
           <input
             aria-autocomplete='list'
             autoComplete={'off'}
             className='autosuggest--input'
+            onBlur={this.handleOnBlur}
             onChange={this.handleOnChange}
+            onFocus={this.handleOnFocus}
             onKeyDown={this.handleKeyDown}
             placeholder='type some fruit!'
             type='text'
@@ -68,16 +73,21 @@ class AutoSuggest extends Component {
               </div>
             ))}
         </div>
-        <input className='autosuggest--button' type='submit' value='Submit' />
+        <input
+          className='autosuggest--button'
+          type='submit'
+          value='Submit'
+          disabled={!value}
+        />
       </form>
     )
   }
 
   handleClickOutside = e => {
-    // close suggestion list if user clicks away
+    // close suggestion list if user clicks somewhere else
     if (
       this.state.showSuggestions &&
-      !this.autosuggestRef.current.contains(e.target)
+      !this.autosuggestContainerRef.current.contains(e.target)
     ) {
       this.setState({ showSuggestions: false })
     }
@@ -93,6 +103,10 @@ class AutoSuggest extends Component {
 
     switch (e.key) {
       case 'Tab':
+        this.setState({
+          showSuggestions: false
+        })
+        break
       case 'Enter':
         // enter pressed
         if (
@@ -103,13 +117,15 @@ class AutoSuggest extends Component {
             showSuggestions: false,
             activeSuggestion: 0
           })
-          break
+        } else {
+          this.setState({
+            showSuggestions: false,
+            value: this.filteredSuggestions[activeSuggestion],
+            activeSuggestion: 0
+          })
         }
-        this.setState({
-          showSuggestions: false,
-          value: this.filteredSuggestions[activeSuggestion],
-          activeSuggestion: 0
-        })
+        // can submit, or go to next field here
+        this.handleSubmit(e)
         break
       case 'ArrowUp':
         // up arrow pressed
@@ -144,6 +160,7 @@ class AutoSuggest extends Component {
   }
 
   handleMouseMove = e => {
+    // set new active suggestion when the user hovers over an item in the list
     let activeIndex = this.filteredSuggestions.indexOf(
       e.currentTarget.innerText
     )
@@ -178,7 +195,7 @@ class AutoSuggest extends Component {
         suggestion.toLowerCase().indexOf(trimmedValue.toLowerCase()) > -1
     )
 
-    // different array to store highlighted suggestions, because it contains strings + JSX
+    // different array to store highlighted suggestions, because it contains an array of [strings + JSX]
     highlightedSuggestions = this.highlightResults(
       trimmedValue,
       filteredSuggestions
@@ -194,14 +211,15 @@ class AutoSuggest extends Component {
   }
 
   handleSubmit = e => {
-    // Submit to wherever you want to here
+    // disable button/show loading and submit here
     e.preventDefault()
   }
 
   highlightResults = (value, filteredSuggestions) => {
     let highlightedSuggestions = []
 
-    // using reactStringReplace instead of regex
+    // using reactStringReplace instead of regex to parse the string
+    // and return an array of [string + jsx] to render
     filteredSuggestions.forEach(suggestion => {
       highlightedSuggestions.push(
         reactStringReplace(suggestion, value, (match, i) => (
@@ -215,7 +233,18 @@ class AutoSuggest extends Component {
     return highlightedSuggestions
   }
 
+  handleOnFocus = () => {
+    const { value } = this.state
+
+    if (value.length > 0) {
+      this.setState({
+        showSuggestions: true
+      })
+    }
+  }
+
   setActiveSuggestion = newActiveSuggestion => {
+    // use a promise to make sure we scroll AFTER the active suggestion has changed
     this.setState(
       {
         activeSuggestion: newActiveSuggestion
@@ -232,13 +261,13 @@ class AutoSuggest extends Component {
 
   render() {
     return (
-      <div className='autosuggest' ref={this.autosuggestRef}>
+      <div className='autosuggest'>
         <h1 className='autosuggest--header'>AutoSuggest App</h1>
         {this.props.suggestions && this.props.suggestions.length > 0 ? (
           this.getAutosuggestForm()
         ) : (
           <h3 className='autosuggest--error'>
-            Error: cannot find suggestions :(
+            Error: could not find any suggestions :(
           </h3>
         )}
       </div>
