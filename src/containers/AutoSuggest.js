@@ -136,7 +136,7 @@ class AutoSuggest extends Component {
           // if they are at the input field, go to the last item
           newActiveSuggestion = this.filteredSuggestions.length - 1
         } else {
-          // go to the preivous item in the array
+          // go to the previous item in the array
           newActiveSuggestion = activeSuggestion - 1
         }
         this.setActiveSuggestion(newActiveSuggestion)
