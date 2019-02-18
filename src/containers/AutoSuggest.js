@@ -39,6 +39,8 @@ class AutoSuggest extends Component {
       showSuggestions
     } = this.state
 
+    let newActiveSuggestion
+
     if (!showSuggestions) {
       return
     }
@@ -62,60 +64,52 @@ class AutoSuggest extends Component {
       case 'ArrowUp':
         // up arrow pressed
         if (activeSuggestion === 0) {
-          // if they are at the start of the list, highlight the last item
-          this.setState(state => ({
-            activeSuggestion: null
-          }))
+          // if they are at the start of the list, go to the input field
+          newActiveSuggestion = null
         } else if (activeSuggestion === null) {
-          // Things get tricky here, need to scroll into view when they use arrow keys, using setState promise to ensure it scrolls at the proper time
-          this.setState(
-            state => ({
-              activeSuggestion: filteredSuggestions.length - 1
-            }),
-            () => {
-              this.autoSuggestListRef.current.scrollIntoView()
-            }
-          )
+          // if they are at the input field, go to the last item
+          newActiveSuggestion = filteredSuggestions.length - 1
         } else {
-          this.setState(
-            state => ({
-              activeSuggestion: activeSuggestion - 1
-            }),
-            () => {
-              if (this.autoSuggestListRef.current) {
-                this.autoSuggestListRef.current.scrollIntoView()
-              }
-            }
-          )
+          // go to the preivous item in the array
+          newActiveSuggestion = activeSuggestion - 1
         }
+
+        this.setState(
+          {
+            activeSuggestion: newActiveSuggestion
+          },
+          () => {
+            if (this.autoSuggestListRef.current) {
+              this.autoSuggestListRef.current.scrollIntoView({
+                block: 'nearest'
+              })
+            }
+          }
+        )
         break
       case 'ArrowDown':
-        // down arrow pressed
-        // if they are at the end of the list, highlight the first item
+        // if they are at the end of the list, return to the input field
         if (activeSuggestion === filteredSuggestions.length - 1) {
-          this.setState({ activeSuggestion: null })
+          newActiveSuggestion = null
         } else if (activeSuggestion === null) {
-          // Things get tricky here, need to scroll into view when they use arrow keys, using setState promise to ensure it scrolls at the proper time
-          this.setState(
-            state => ({
-              activeSuggestion: 0
-            }),
-            () => {
-              this.autoSuggestListRef.current.scrollIntoView(false)
-            }
-          )
+          // if they are at the input field, highlight the first item
+          newActiveSuggestion = 0
         } else {
-          this.setState(
-            state => ({
-              activeSuggestion: activeSuggestion + 1
-            }),
-            () => {
-              if (this.autoSuggestListRef.current) {
-                this.autoSuggestListRef.current.scrollIntoView(false)
-              }
-            }
-          )
+          // go to the next item in the array
+          newActiveSuggestion = activeSuggestion + 1
         }
+        this.setState(
+          {
+            activeSuggestion: newActiveSuggestion
+          },
+          () => {
+            if (this.autoSuggestListRef.current) {
+              this.autoSuggestListRef.current.scrollIntoView({
+                block: 'nearest'
+              })
+            }
+          }
+        )
         break
       default:
         break
@@ -147,6 +141,7 @@ class AutoSuggest extends Component {
     )
 
     this.setState({
+      activeSuggestion: 0,
       filteredSuggestions,
       highlightedSuggestions,
       showSuggestions: true,
