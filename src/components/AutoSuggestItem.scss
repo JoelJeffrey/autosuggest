@@ -4,7 +4,6 @@ $activeItem: darken(#fff, 10%);
   padding: 15px 25px;
   text-align: left;
 
-  &:hover,
   &.autosuggest-item--active {
     background: $activeItem;
   }

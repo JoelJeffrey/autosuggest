@@ -3,12 +3,21 @@ import React from 'react'
 import './AutoSuggestItem.scss'
 
 const AutoSuggestItem = props => {
-  const { classNames, handleOnClick, isActive, suggestion, tabIndex } = props
+  const {
+    handleOnClick,
+    handleMouseMove,
+    isActive,
+    suggestion,
+    tabIndex
+  } = props
+
   return (
     <li
-      className={`${classNames} autosuggest-item`}
+      className={`${
+        isActive ? 'autosuggest-item--active' : ''
+      } autosuggest-item`}
       onClick={handleOnClick}
-      aria-selected={isActive}
+      onMouseMove={handleMouseMove}
       tabIndex={tabIndex}
     >
       {suggestion}

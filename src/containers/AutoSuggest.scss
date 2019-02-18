@@ -1,5 +1,13 @@
 .autosuggest--form {
-  display: inline-block;
+  position: relative;
+  display: grid;
+  grid-template-areas: 'list-container button';
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.autosuggest--list-container {
+  grid-area: list-container;
   position: relative;
 }
 
@@ -10,8 +18,16 @@
   font-size: 16px;
   padding: 5px 25px;
   position: relative;
-  width: 300px;
+  width: 100%;
   z-index: 3;
+}
+
+.autosuggest--button {
+  grid-area: button;
+  padding: 10px 20px;
+  border-radius: 5px;
+  background: #e9e9e9;
+  border: none;
 }
 
 .autosuggest--empty {
@@ -19,4 +35,9 @@
   display: block;
   text-align: left;
   padding: 15px 25px;
+}
+
+.autosuggest--highlight {
+  color: rgb(223, 48, 48);
+  background: transparent;
 }
