@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import AutoSuggestItem from './AutoSuggestItem'
 
 import './AutoSuggestList.scss'
@@ -11,6 +12,7 @@ const AutoSuggestList = props => {
     handleMouseMove,
     myRef
   } = props
+
   return (
     <ul className='autosuggest-list' role='listbox'>
       {highlightedSuggestions.map((suggestion, i) => {
@@ -21,18 +23,30 @@ const AutoSuggestList = props => {
         }
         return (
           <AutoSuggestItem
-            isActive={isActive}
-            handleOnClick={handleOnClick}
             handleMouseMove={handleMouseMove}
-            suggestion={suggestion}
+            handleOnClick={handleOnClick}
+            isActive={isActive}
             key={`${suggestion}-${i}`}
-            tabIndex={i}
             ref={isActive ? myRef : null}
+            suggestion={suggestion}
           />
         )
       })}
     </ul>
   )
+}
+
+AutoSuggestList.propTypes = {
+  activeSuggestion: PropTypes.number,
+  highlightedSuggestions: PropTypes.array.isRequired,
+  handleOnClick: PropTypes.func.isRequired,
+  handleMouseMove: PropTypes.func.isRequired,
+  myRef: PropTypes.object
+}
+
+AutoSuggestList.defaultProps = {
+  activeSuggestion: 0,
+  myRef: null
 }
 
 export default AutoSuggestList

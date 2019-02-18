@@ -12,12 +12,12 @@ class AutoSuggest extends Component {
 
   constructor(props) {
     super(props)
-    this.autoSuggestListRef = React.createRef()
+    this.autoSuggestItemRef = React.createRef()
     this.autosuggestRef = React.createRef()
+    this.filteredSuggestions = []
 
     this.state = {
       activeSuggestion: 0,
-      filteredSuggestions: [],
       highlightedSuggestions: [],
       showSuggestions: false,
       value: ''
@@ -33,12 +33,7 @@ class AutoSuggest extends Component {
   }
 
   handleKeyDown = e => {
-    const {
-      activeSuggestion,
-      filteredSuggestions,
-      showSuggestions
-    } = this.state
-
+    const { activeSuggestion, showSuggestions } = this.state
     let newActiveSuggestion
 
     if (!showSuggestions) {
@@ -46,6 +41,7 @@ class AutoSuggest extends Component {
     }
 
     switch (e.key) {
+      case 'Tab':
       case 'Enter':
         // enter pressed
         if (activeSuggestion === null) {
@@ -57,7 +53,7 @@ class AutoSuggest extends Component {
         }
         this.setState({
           showSuggestions: false,
-          value: filteredSuggestions[activeSuggestion],
+          value: this.filteredSuggestions[activeSuggestion],
           activeSuggestion: 0
         })
         break
@@ -68,28 +64,16 @@ class AutoSuggest extends Component {
           newActiveSuggestion = null
         } else if (activeSuggestion === null) {
           // if they are at the input field, go to the last item
-          newActiveSuggestion = filteredSuggestions.length - 1
+          newActiveSuggestion = this.filteredSuggestions.length - 1
         } else {
           // go to the preivous item in the array
           newActiveSuggestion = activeSuggestion - 1
         }
-
-        this.setState(
-          {
-            activeSuggestion: newActiveSuggestion
-          },
-          () => {
-            if (this.autoSuggestListRef.current) {
-              this.autoSuggestListRef.current.scrollIntoView({
-                block: 'nearest'
-              })
-            }
-          }
-        )
+        this.setActiveSuggestion(newActiveSuggestion)
         break
       case 'ArrowDown':
         // if they are at the end of the list, return to the input field
-        if (activeSuggestion === filteredSuggestions.length - 1) {
+        if (activeSuggestion === this.filteredSuggestions.length - 1) {
           newActiveSuggestion = null
         } else if (activeSuggestion === null) {
           // if they are at the input field, highlight the first item
@@ -98,22 +82,26 @@ class AutoSuggest extends Component {
           // go to the next item in the array
           newActiveSuggestion = activeSuggestion + 1
         }
-        this.setState(
-          {
-            activeSuggestion: newActiveSuggestion
-          },
-          () => {
-            if (this.autoSuggestListRef.current) {
-              this.autoSuggestListRef.current.scrollIntoView({
-                block: 'nearest'
-              })
-            }
-          }
-        )
+        this.setActiveSuggestion(newActiveSuggestion)
         break
       default:
         break
     }
+  }
+
+  setActiveSuggestion = newActiveSuggestion => {
+    this.setState(
+      {
+        activeSuggestion: newActiveSuggestion
+      },
+      () => {
+        if (this.autoSuggestItemRef.current) {
+          this.autoSuggestItemRef.current.scrollIntoView({
+            block: 'nearest'
+          })
+        }
+      }
+    )
   }
 
   handleOnChange = e => {
@@ -140,9 +128,9 @@ class AutoSuggest extends Component {
       filteredSuggestions
     )
 
+    this.filteredSuggestions = filteredSuggestions
     this.setState({
       activeSuggestion: 0,
-      filteredSuggestions,
       highlightedSuggestions,
       showSuggestions: true,
       value
@@ -151,9 +139,9 @@ class AutoSuggest extends Component {
 
   handleOnClick = e => {
     // get value and fill input, then reset the suggestion list
+    this.filteredSuggestions = []
     this.setState({
       activeSuggestion: 0,
-      filteredSuggestions: [],
       showSuggestions: false,
       value: e.currentTarget.innerText
     })
@@ -170,8 +158,9 @@ class AutoSuggest extends Component {
   }
 
   handleMouseMove = e => {
-    const { filteredSuggestions } = this.state
-    let activeIndex = filteredSuggestions.indexOf(e.currentTarget.innerText)
+    let activeIndex = this.filteredSuggestions.indexOf(
+      e.currentTarget.innerText
+    )
     this.setState({ activeSuggestion: activeIndex })
   }
 
@@ -211,6 +200,7 @@ class AutoSuggest extends Component {
         <form className='autosuggest--form' onSubmit={this.handleSubmit}>
           <div className='autosuggest--list-container'>
             <input
+              aria-autocomplete='list'
               autoComplete={'off'}
               className='autosuggest--input'
               onChange={this.handleOnChange}
@@ -223,10 +213,10 @@ class AutoSuggest extends Component {
               (highlightedSuggestions.length > 0 ? (
                 <AutoSuggestList
                   activeSuggestion={activeSuggestion}
-                  handleOnClick={this.handleOnClick}
                   handleMouseMove={this.handleMouseMove}
+                  handleOnClick={this.handleOnClick}
                   highlightedSuggestions={highlightedSuggestions}
-                  myRef={this.autoSuggestListRef}
+                  myRef={this.autoSuggestItemRef}
                 />
               ) : (
                 <div className='autosuggest--empty'>
