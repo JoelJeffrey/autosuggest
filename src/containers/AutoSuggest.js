@@ -12,6 +12,7 @@ class AutoSuggest extends Component {
 
   constructor(props) {
     super(props)
+    this.autoSuggestListRef = React.createRef()
     this.autosuggestRef = React.createRef()
 
     this.state = {
@@ -66,13 +67,26 @@ class AutoSuggest extends Component {
             activeSuggestion: null
           }))
         } else if (activeSuggestion === null) {
-          this.setState(state => ({
-            activeSuggestion: filteredSuggestions.length - 1
-          }))
+          // Things get tricky here, need to scroll into view when they use arrow keys, using setState promise to ensure it scrolls at the proper time
+          this.setState(
+            state => ({
+              activeSuggestion: filteredSuggestions.length - 1
+            }),
+            () => {
+              this.autoSuggestListRef.current.scrollIntoView()
+            }
+          )
         } else {
-          this.setState(state => ({
-            activeSuggestion: activeSuggestion - 1
-          }))
+          this.setState(
+            state => ({
+              activeSuggestion: activeSuggestion - 1
+            }),
+            () => {
+              if (this.autoSuggestListRef.current) {
+                this.autoSuggestListRef.current.scrollIntoView()
+              }
+            }
+          )
         }
         break
       case 'ArrowDown':
@@ -81,15 +95,27 @@ class AutoSuggest extends Component {
         if (activeSuggestion === filteredSuggestions.length - 1) {
           this.setState({ activeSuggestion: null })
         } else if (activeSuggestion === null) {
-          this.setState(state => ({
-            activeSuggestion: 0
-          }))
+          // Things get tricky here, need to scroll into view when they use arrow keys, using setState promise to ensure it scrolls at the proper time
+          this.setState(
+            state => ({
+              activeSuggestion: 0
+            }),
+            () => {
+              this.autoSuggestListRef.current.scrollIntoView(false)
+            }
+          )
         } else {
-          this.setState(state => ({
-            activeSuggestion: activeSuggestion + 1
-          }))
+          this.setState(
+            state => ({
+              activeSuggestion: activeSuggestion + 1
+            }),
+            () => {
+              if (this.autoSuggestListRef.current) {
+                this.autoSuggestListRef.current.scrollIntoView(false)
+              }
+            }
+          )
         }
-
         break
       default:
         break
@@ -186,7 +212,7 @@ class AutoSuggest extends Component {
 
     return (
       <div className='autosuggest' ref={this.autosuggestRef}>
-        <h1>AutoSuggest App</h1>
+        <h1 className='autosuggest--header'>AutoSuggest App</h1>
         <form className='autosuggest--form' onSubmit={this.handleSubmit}>
           <div className='autosuggest--list-container'>
             <input
@@ -205,6 +231,7 @@ class AutoSuggest extends Component {
                   handleOnClick={this.handleOnClick}
                   handleMouseMove={this.handleMouseMove}
                   highlightedSuggestions={highlightedSuggestions}
+                  myRef={this.autoSuggestListRef}
                 />
               ) : (
                 <div className='autosuggest--empty'>

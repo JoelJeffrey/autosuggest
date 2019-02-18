@@ -8,7 +8,8 @@ const AutoSuggestList = props => {
     activeSuggestion,
     highlightedSuggestions,
     handleOnClick,
-    handleMouseMove
+    handleMouseMove,
+    myRef
   } = props
   return (
     <ul className='autosuggest-list' role='listbox'>
@@ -26,6 +27,7 @@ const AutoSuggestList = props => {
             suggestion={suggestion}
             key={`${suggestion}-${i}`}
             tabIndex={i}
+            ref={isActive ? myRef : null}
           />
         )
       })}

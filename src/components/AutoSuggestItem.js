@@ -2,7 +2,7 @@ import React from 'react'
 
 import './AutoSuggestItem.scss'
 
-const AutoSuggestItem = props => {
+const AutoSuggestItem = React.forwardRef((props, ref) => {
   const {
     handleOnClick,
     handleMouseMove,
@@ -19,10 +19,11 @@ const AutoSuggestItem = props => {
       onClick={handleOnClick}
       onMouseMove={handleMouseMove}
       tabIndex={tabIndex}
+      ref={ref}
     >
       {suggestion}
     </li>
   )
-}
+})
 
 export default AutoSuggestItem
